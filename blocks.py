@@ -1,6 +1,6 @@
 import abc
 import torch
-
+import math
 
 class Block(abc.ABC):
     """
@@ -75,7 +75,8 @@ class Linear(Block):
         # TODO: Create the weight matrix (w) and bias vector (b).
 
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.w = torch.randn(out_features,in_features) / wstd
+        self.b = torch.randn(out_features) / wstd
         # ========================
 
         self.dw = torch.zeros_like(self.w)
@@ -100,7 +101,8 @@ class Linear(Block):
         # TODO: Compute the affine transform
 
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = torch.mm(x,self.w.transpose(0,1))
+        out += self.b
         # ========================
 
         self.grad_cache['x'] = x
@@ -119,7 +121,23 @@ class Linear(Block):
         #   - db, the gradient of the loss with respect to b
         # You should accumulate gradients in dw and db.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #print(self.w.shape)
+        # gradient for W:
+        # we can observe that the gradient with respect to w^T (knowing backprop for matrix mul.) is:
+        # dL / dw^t = x^T * dout. realizing that the gradient for the transposed is the transposed matrix we get:
+        # dL / dw^T = (dout)^T * x
+        self.dw = torch.mm(dout.transpose(0,1),x)
+        # Gradient for bias:
+        # this is an addition operation, so intuitively the derivative is 1. working with matrices complicates a bit.
+        # for any coordinate in (x*W^T + b) the derivative with regard to (b)i is
+        # 1 if that coordinate is in the i'th row, 0 otherwise.
+        # so we get a *very* large Jacobian full of zeros and 1's. As we need to multiply it with the upstream grad
+        # we'll skip calculating it and just remember that this is all going to be multiplied with the downstream
+        # gradient which will get us back to a normal size
+        self.db = torch.matmul(torch.ones(dout.shape[0]),dout)
+        #similarly for w, the gradient with regards to x is: (dout * (w^T)^T) = dout* w
+        dx = torch.mm(dout,self.w)
+        #raise NotImplementedError()
         # ========================
 
         return dx
@@ -145,7 +163,8 @@ class ReLU(Block):
 
         # TODO: Implement the ReLU operation.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = torch.max(input=x, other=torch.zeros_like(x), out=None)
+        #raise NotImplementedError()
         # ========================
 
         self.grad_cache['x'] = x
@@ -160,7 +179,14 @@ class ReLU(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # Again, the local gradient might be huge, but it's a diagonal matrix. and thinking even further, it's easy to
+        # see that any negative value in x has no affect on downstream value, while for any positive value this is just
+        # the identity function (this is the most intuitive way to consider this, it's also possible to simulate the
+        # multipication process).
+        mask = torch.zeros(x.shape[0], x.shape[1])  # auxilary: tensor.where demands a tensor, we'll use this one
+        # turn matrix binary - every cell smaller than 0 turns to 0 (since we didn't have negatives we are left with 0's)
+        dx = torch.where(dout < 0, mask, dout)
+        #raise NotImplementedError()
         # ========================
 
         return dx
@@ -179,6 +205,7 @@ class Sigmoid(Block):
     def __init__(self):
         super().__init__()
 
+
     def forward(self, x, **kw):
         """
         Computes s(x) = 1/(1+exp(-x))
@@ -190,7 +217,16 @@ class Sigmoid(Block):
         # TODO: Implement the Sigmoid function. Save whatever you need into
         # grad_cache.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        tmp = torch.sigmoid(x) #debug
+        out = 1 / (1 + torch.pow(math.e, -x))
+        #my implementation passed testes but when working in sequential mode, there were very small diffs (about
+        # 1e^15 that were magnified upstream causing major calculation errors upstream. sent a mail to Tomer, meanwhile
+        # Using the frameworks builtin function
+        #print (tmp - out) #this gave almost 0 dif
+
+        out = tmp
+
+        self.grad_cache['s'] = out
         # ========================
 
         return out
@@ -203,7 +239,10 @@ class Sigmoid(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        s = self.grad_cache['s']
+        tmp = torch.mul((1-s),s) #elementwise derivative
+        self.grad_cache['s'] = s #repare damage to the cached value
+        dx = torch.mul(tmp,dout) #each coordinate in partial gradient effects only the corasponding element in dout
         # ========================
 
         return dx
@@ -247,7 +286,20 @@ class CrossEntropyLoss(Block):
         # Tip: to get a different column from each row of a matrix tensor m,
         # you can index it with m[range(num_rows), list_of_cols].
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # get the exponent of all scores.
+        # exp = torch.pow(math.e, x, out=None)
+        # sum each row.
+        # take log of each row
+        logs = torch.logsumexp(x, 1, keepdim=False, out=None)
+        #print(logs)
+        correct = x[range(N), y]
+        #print(correct)
+        out = logs - correct
+        loss = torch.sum(out) / N
+
+        # deduct from each row the correct class score
+        # sum this vector again
+        # avarege and return.
         # ========================
 
         self.grad_cache['x'] = x
@@ -266,7 +318,15 @@ class CrossEntropyLoss(Block):
 
         # TODO: Calculate the gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # The derivative changes between the correct class score and the incorrect:
+        #   for incorrect class score: d(loss) / d(x)ij = 1/N(e^(x)ij / sum(e^(x))) for all scores in sample
+        #   for the correct class score we get the same expression but with added -1/N
+        exp = torch.pow(math.e, x, out=None)
+        sumexp = 1 / torch.sum(exp,dim=1) #inverce of sum of exponents for each sample
+        dx = 1/N * torch.mul(exp,sumexp.unsqueeze(1))
+        #still need to deduct 1/N from each "correct" score's derivative
+        dx[range(N), y] = dx[range(N), y] - 1/N
+
         # ========================
 
         return dx
@@ -324,7 +384,9 @@ class Sequential(Block):
         # TODO: Implement the forward pass by passing each block's output
         # as the input of the next.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = x
+        for i, block in enumerate(self.blocks):
+            out = block.forward(out)
         # ========================
 
         return out
@@ -336,7 +398,9 @@ class Sequential(Block):
         # Each block's input gradient should be the previous block's output
         # gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        din = dout
+        for block in reversed(self.blocks):
+            din = block.backward(din)
         # ========================
 
         return din
@@ -346,7 +410,8 @@ class Sequential(Block):
 
         # TODO: Return the parameter tuples from all blocks.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for block in self.blocks:
+            params += (block.params())
         # ========================
 
         return params
