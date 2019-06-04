@@ -73,6 +73,8 @@ class ConvClassifier(nn.Module):
     The architecture is:
     [(Conv -> ReLU)*P -> MaxPool]*(N/P) -> (Linear -> ReLU)*M -> Linear
     """
+    hidden_dims: object
+
     def __init__(self, in_size, out_classes, filters, pool_every, hidden_dims):
         """
         :param in_size: Size of input images, e.g. (C,H,W).
@@ -102,8 +104,15 @@ class ConvClassifier(nn.Module):
         # Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
         # Pooling to reduce dimensions.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
-
+        for i , filter in enumerate(self.filters):
+            # note that there are very weird options for conv layers, take a look in docs to see what are the options
+            # most weird options (such as dialation) are off by default, but worth taking a look
+            # chosen 1 padding as this preserves shape with 3*3 filters (here called kernel)
+            layers.append(torch.nn.Conv2d(in_channels, filter, kernel_size=3, padding=1))
+            layers.append(torch.nn.ReLU())#ReLu
+            in_channels = filter  # this is the number of channels towards next layer
+            if (i!=0 and (i % self.pool_every-1) == 0):
+                layers.append(torch.nn.MaxPool2d(kernel_size=2))
         # ========================
         seq = nn.Sequential(*layers)
         return seq
@@ -117,7 +126,15 @@ class ConvClassifier(nn.Module):
         # You'll need to calculate the number of features first.
         # The last Linear layer should have an output dimension of out_classes.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        pool_num = len(self.filters) / self.pool_every
+        in_features = (int)(in_h / (2 ** pool_num)) #every pool input size is cut in half
+        in_features = (in_features**2) * self.filters[-1]
+        #in_features = (int)(in_h / (2 ** pool_num)) #debug
+        for i, dim in enumerate(self.hidden_dims):
+            layers.append(torch.nn.Linear(in_features, dim))
+            layers.append(torch.nn.ReLU())
+            in_features = dim
+        layers.append(torch.nn.Linear(in_features, self.out_classes))
         # ========================
         seq = nn.Sequential(*layers)
         return seq
@@ -127,7 +144,10 @@ class ConvClassifier(nn.Module):
         # Extract features from the input, run the classifier on them and
         # return class scores.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        f = self.feature_extractor(x)
+        f = f.reshape(-1)
+        out = self.classifier(f)
+
         # ========================
         return out
 
