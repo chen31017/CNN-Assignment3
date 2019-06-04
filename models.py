@@ -47,7 +47,6 @@ class MLP(Block):
             i+=1
         blocks.append(Linear(hidden_features[i],num_classes))
         # ========================
-
         self.sequence = Sequential(*blocks)
 
     def forward(self, x, **kw):
@@ -73,7 +72,6 @@ class ConvClassifier(nn.Module):
     The architecture is:
     [(Conv -> ReLU)*P -> MaxPool]*(N/P) -> (Linear -> ReLU)*M -> Linear
     """
-    hidden_dims: object
 
     def __init__(self, in_size, out_classes, filters, pool_every, hidden_dims):
         """
@@ -104,15 +102,17 @@ class ConvClassifier(nn.Module):
         # Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
         # Pooling to reduce dimensions.
         # ====== YOUR CODE: ======
+        pool = self.pool_every - 1
         for i , filter in enumerate(self.filters):
             # note that there are very weird options for conv layers, take a look in docs to see what are the options
             # most weird options (such as dialation) are off by default, but worth taking a look
             # chosen 1 padding as this preserves shape with 3*3 filters (here called kernel)
             layers.append(torch.nn.Conv2d(in_channels, filter, kernel_size=3, padding=1))
             layers.append(torch.nn.ReLU())#ReLu
-            in_channels = filter  # this is the number of channels towards next layer
-            if (i!=0 and (i % self.pool_every-1) == 0):
+            if (i==pool):
                 layers.append(torch.nn.MaxPool2d(kernel_size=2))
+                pool += self.pool_every
+            in_channels = filter  # this is the number of channels towards next layer
         # ========================
         seq = nn.Sequential(*layers)
         return seq
@@ -145,9 +145,8 @@ class ConvClassifier(nn.Module):
         # return class scores.
         # ====== YOUR CODE: ======
         f = self.feature_extractor(x)
-        f = f.reshape(-1)
+        f = f.reshape(x.shape[0],-1) #a bit naibourhood as conv layers work on tensors per sample, and fc on vectors
         out = self.classifier(f)
-
         # ========================
         return out
 
