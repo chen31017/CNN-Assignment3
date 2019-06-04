@@ -386,6 +386,10 @@ class Sequential(Block):
         # ====== YOUR CODE: ======
         out = x
         for i, block in enumerate(self.blocks):
+            if isinstance(block, CrossEntropyLoss):
+                #print(**kw)
+                out = block.forward(out,**kw)
+                continue
             out = block.forward(out)
         # ========================
 
