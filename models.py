@@ -33,19 +33,19 @@ class MLP(Block):
 
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
-        if (activation=='relu'):
+        if activation=='relu':
             act = ReLU
         else:
             act = Sigmoid
-        blocks.append(Linear(in_features,hidden_features[0]))
+        blocks.append(Linear(in_features=in_features,out_features=hidden_features[0]))
         blocks.append(act())
         i = 0
         l = len(hidden_features)
-        while i<l:
+        while i<l-1:
             blocks.append(Linear(hidden_features[i],hidden_features[i+1]))
             blocks.append(act())
+            i+=1
         blocks.append(Linear(hidden_features[i],num_classes))
-        print("done construction")
         # ========================
 
         self.sequence = Sequential(*blocks)
