@@ -71,9 +71,9 @@ class VanillaSGD(Optimizer):
             # Update the gradient according to regularization and then
             # update the parameters tensor.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            reg_term = p * self.reg # derivative of the L2 norm is 2p. this is mult. times 1/2 and lambda (reg)
+            p -= self.learn_rate * (dp+reg_term) #deduct the gradient times learn rate
             # ========================
-
 
 class MomentumSGD(Optimizer):
     def __init__(self, params, learn_rate=1e-3, reg=0, momentum=0.9):
