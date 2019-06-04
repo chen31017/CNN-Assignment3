@@ -294,7 +294,12 @@ class BlocksTrainer(Trainer):
         # - Optimize params
         # - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        res = self.model(X) #run fw pass
+        loss = self.loss_fn(res , y) #calc loss (also to prep grad)
+        self.model.backward(self.loss_fn.backward()) #calc grad through network
+        self.optimizer.step() #optimize
+        _ , pred = res.max(dim=1) # when specifying dim, gives a tuple with index
+        num_correct = torch.eq(y,pred).sum()
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -328,7 +333,13 @@ class TorchTrainer(Trainer):
         # - Optimize params
         # - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        res = self.model.forward(X) # run fw pass
+        loss = self.loss_fn(res, y) # calc loss (also to prep grad)
+        loss.backward()# calc grad through network
+        self.optimizer.step() # optimize
+        #Done training, now report progress
+        _ , pred = res.max(dim=1) # when specifying dim, gives a tuple with index
+        num_correct = torch.eq(y,pred).sum()
         # ========================
 
         return BatchResult(loss, num_correct)
