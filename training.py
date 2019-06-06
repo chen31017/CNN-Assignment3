@@ -355,10 +355,11 @@ class TorchTrainer(Trainer):
         res = self.model.forward(X) # run fw pass
         loss = self.loss_fn(res, y) # calc loss (also to prep grad)
         loss.backward()# calc grad through network
+        loss = loss.item()
         self.optimizer.step() # optimize
         #Done training, now report progress
         _ , pred = res.max(dim=1) # when specifying dim, gives a tuple with index
-        num_correct = torch.eq(y,pred).sum()
+        num_correct = torch.eq(y,pred).sum().item()
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -375,9 +376,9 @@ class TorchTrainer(Trainer):
             # - Calculate number of correct predictions
             # ====== YOUR CODE: ======
             res = self.model.forward(X)
-            loss = self.loss_fn(res, y)
+            loss = self.loss_fn(res, y).item()
             _, pred = res.max(dim=1)  # when specifying dim, gives a tuple with index
-            num_correct = torch.eq(y, pred).sum()
+            num_correct = torch.eq(y, pred).sum().item()
             # ========================
 
         return BatchResult(loss, num_correct)

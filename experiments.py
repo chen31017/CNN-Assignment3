@@ -68,11 +68,13 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.9 ,weight_decay=reg)
     dl_train = torch.utils.data.DataLoader(ds_train, bs_train, shuffle=False)
     dl_test = torch.utils.data.DataLoader(ds_test, bs_train, shuffle=False) #what is the bach size?
-    trainer = training.TorchTrainer(model, loss_fn, optimizer,
-                                    device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+    trainer = training.TorchTrainer(model, loss_fn, optimizer, device=device)
     fit_res = trainer.fit(dl_train= dl_train, dl_test=dl_test, num_epochs=epochs, checkpoints=checkpoints,
                           early_stopping=early_stopping, )
     # ========================
+
+    #parameters that seemed decent: lr defult*10, reg defult*2, bs defult*2
+
 
     save_experiment(run_name, out_dir, cfg, fit_res)
 
