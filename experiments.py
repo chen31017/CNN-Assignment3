@@ -56,7 +56,22 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     #  for you automatically.
     fit_res = None
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    x0, _ = ds_train[0]
+    in_size = x0.shape
+    filters = []
+    for f in filters_per_layer:
+        filters += ([f] * layers_per_block)
+    pool = pool_every * layers_per_block
+    model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,
+                                  pool_every=pool, hidden_dims=hidden_dims)
+    loss_fn = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.9 ,weight_decay=reg)
+    dl_train = torch.utils.data.DataLoader(ds_train, bs_train, shuffle=False)
+    dl_test = torch.utils.data.DataLoader(ds_test, bs_train, shuffle=False) #what is the bach size?
+    trainer = training.TorchTrainer(model, loss_fn, optimizer,
+                                    device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+    fit_res = trainer.fit(dl_train= dl_train, dl_test=dl_test, num_epochs=epochs, checkpoints=checkpoints,
+                          early_stopping=early_stopping, )
     # ========================
 
     save_experiment(run_name, out_dir, cfg, fit_res)

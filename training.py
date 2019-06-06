@@ -32,7 +32,8 @@ class Trainer(abc.ABC):
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.device = device
-        model.to(self.device)
+        #model.to(self.device)
+        print("not set to gpu")
 
     def fit(self, dl_train: DataLoader, dl_test: DataLoader,
             num_epochs, checkpoints: str = None,
@@ -85,7 +86,16 @@ class Trainer(abc.ABC):
             # - Implement early stopping. This is a very useful and
             #   simple regularization technique that is highly recommended.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            train_result = train_epoch(dl_train, verbose)
+            train_loss += train_result.losses
+            train_acc += train_result.accuracy
+            test_result = test_epoch(dl_test, verbose)
+            test_loss += test_result.losses
+            test_acc += train_result.accuracy
+            if (epoch>0 and prev == test_loss[-1]): #no improvment
+                epochs_without_improvement += 1
+            if (early_stopping==epochs_without_improvement):
+                break
             # ========================
 
             # Save model checkpoint if requested
@@ -284,6 +294,7 @@ class VAETrainer(Trainer):
 class BlocksTrainer(Trainer):
     def __init__(self, model, loss_fn, optimizer):
         super().__init__(model, loss_fn, optimizer)
+        self.i = 0
 
     def train_batch(self, batch) -> BatchResult:
         X, y = batch
@@ -296,7 +307,8 @@ class BlocksTrainer(Trainer):
         # ====== YOUR CODE: ======
         res = self.model(X) #run fw pass
         loss = self.loss_fn(res , y) #calc loss (also to prep grad)
-        self.model.backward(self.loss_fn.backward()) #calc grad through network
+        grad = self.loss_fn.backward()  # calc grad through network
+        self.model.backward(grad)
         self.optimizer.step() #optimize
         _ , pred = res.max(dim=1) # when specifying dim, gives a tuple with index
         num_correct = torch.eq(y,pred).sum()
@@ -311,7 +323,10 @@ class BlocksTrainer(Trainer):
         # - Forward pass
         # - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        res = self.model(X)
+        loss = self.loss_fn(res)
+        _, pred = res.max(dim=1)  # when specifying dim, gives a tuple with index
+        num_correct = torch.eq(y, pred).sum()
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -333,6 +348,7 @@ class TorchTrainer(Trainer):
         # - Optimize params
         # - Calculate number of correct predictions
         # ====== YOUR CODE: ======
+        self.model.zero_grad()
         res = self.model.forward(X) # run fw pass
         loss = self.loss_fn(res, y) # calc loss (also to prep grad)
         loss.backward()# calc grad through network

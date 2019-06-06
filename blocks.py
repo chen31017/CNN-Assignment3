@@ -75,8 +75,8 @@ class Linear(Block):
         # TODO: Create the weight matrix (w) and bias vector (b).
 
         # ====== YOUR CODE: ======
-        self.w = torch.randn(out_features,in_features) / wstd
-        self.b = torch.randn(out_features) / wstd
+        self.w = torch.randn(out_features,in_features)# / wstd
+        self.b = torch.randn(out_features)# / wstd
         # ========================
 
         self.dw = torch.zeros_like(self.w)
@@ -101,7 +101,7 @@ class Linear(Block):
         # TODO: Compute the affine transform
 
         # ====== YOUR CODE: ======
-        out = torch.mm(x,self.w.transpose(0,1))
+        out = torch.matmul(x,self.w.transpose(0,1))
         out += self.b
         # ========================
 
@@ -121,12 +121,11 @@ class Linear(Block):
         #   - db, the gradient of the loss with respect to b
         # You should accumulate gradients in dw and db.
         # ====== YOUR CODE: ======
-        #print(self.w.shape)
         # gradient for W:
         # we can observe that the gradient with respect to w^T (knowing backprop for matrix mul.) is:
         # dL / dw^t = x^T * dout. realizing that the gradient for the transposed is the transposed matrix we get:
         # dL / dw^T = (dout)^T * x
-        self.dw = torch.mm(dout.transpose(0,1),x)
+        self.dw = torch.matmul(dout.transpose(0,1),x)
         # Gradient for bias:
         # this is an addition operation, so intuitively the derivative is 1. working with matrices complicates a bit.
         # for any coordinate in (x*W^T + b) the derivative with regard to (b)i is
@@ -136,7 +135,7 @@ class Linear(Block):
         # gradient which will get us back to a normal size
         self.db = torch.matmul(torch.ones(dout.shape[0]),dout)
         #similarly for w, the gradient with regards to x is: (dout * (w^T)^T) = dout* w
-        dx = torch.mm(dout,self.w)
+        dx = torch.matmul(dout,self.w)
         #raise NotImplementedError()
         # ========================
 
@@ -164,7 +163,7 @@ class ReLU(Block):
         # TODO: Implement the ReLU operation.
         # ====== YOUR CODE: ======
         out = torch.max(input=x, other=torch.zeros_like(x), out=None)
-        #raise NotImplementedError()
+        #out = torch.nn.functional.relu(x)
         # ========================
 
         self.grad_cache['x'] = x
@@ -186,7 +185,6 @@ class ReLU(Block):
         mask = torch.zeros(x.shape[0], x.shape[1])  # auxilary: tensor.where demands a tensor, we'll use this one
         # turn matrix binary - every cell smaller than 0 turns to 0 (since we didn't have negatives we are left with 0's)
         dx = torch.where(dout < 0, mask, dout)
-        #raise NotImplementedError()
         # ========================
 
         return dx
@@ -291,17 +289,10 @@ class CrossEntropyLoss(Block):
         # sum each row.
         # take log of each row
         logs = torch.logsumexp(x, 1, keepdim=False, out=None)
-        #print(logs)
         correct = x[range(N), y]
-        #print(correct)
         out = logs - correct
         loss = torch.sum(out) / N
-
-        # deduct from each row the correct class score
-        # sum this vector again
-        # avarege and return.
         # ========================
-
         self.grad_cache['x'] = x
         self.grad_cache['y'] = y
         return loss
@@ -326,9 +317,7 @@ class CrossEntropyLoss(Block):
         dx = 1/N * torch.mul(exp,sumexp.unsqueeze(1))
         #still need to deduct 1/N from each "correct" score's derivative
         dx[range(N), y] = dx[range(N), y] - 1/N
-
         # ========================
-
         return dx
 
     def params(self):
@@ -387,12 +376,10 @@ class Sequential(Block):
         out = x
         for i, block in enumerate(self.blocks):
             if isinstance(block, CrossEntropyLoss):
-                #print(**kw)
                 out = block.forward(out,**kw)
                 continue
             out = block.forward(out)
         # ========================
-
         return out
 
     def backward(self, dout):
@@ -403,8 +390,9 @@ class Sequential(Block):
         # gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
         din = dout
-        for block in reversed(self.blocks):
+        for block in reversed(self.blocks): #reversed as we want to work backwards through the net
             din = block.backward(din)
+            #print("gradient sum for this layer" ,  din.mean())
         # ========================
 
         return din

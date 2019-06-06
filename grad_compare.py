@@ -12,6 +12,7 @@ def compare_block_to_torch(block: blocks.Block, x, y=None, seed=42):
     z = block(x, y=y)
     # Invent some output gradient
     dz = torch.randn(*z.shape) if z.dim() > 0 else torch.tensor(1.0)
+
     # Backward pass (ours)
     dx = block.backward(dz)
 
@@ -31,6 +32,7 @@ def compare_block_to_torch(block: blocks.Block, x, y=None, seed=42):
 
     # Compare input gradient
     dx_autograd = x.grad
+
     diffs.append(torch.norm(dx_autograd - dx))
     print(f'{"input":8s} diff={diffs[-1]:.3f}')
 
@@ -39,5 +41,9 @@ def compare_block_to_torch(block: blocks.Block, x, y=None, seed=42):
         dp_autograd = p.grad
         diffs.append(torch.norm(dp_autograd - dp))
         print(f'param#{i+1:02d} diff={diffs[-1]:.3f}')
+        if i==1:
+            continue #debug
+            print(dp)  # debug
+            print(dp_autograd)# debug
 
     return diffs

@@ -72,7 +72,7 @@ class VanillaSGD(Optimizer):
             # update the parameters tensor.
             # ====== YOUR CODE: ======
             reg_term = p * self.reg # derivative of the L2 norm is 2p. this is mult. times 1/2 and lambda (reg)
-            p -= self.learn_rate * (dp+reg_term) #deduct the gradient times learn rate
+            p -= self.learn_rate * (dp + reg_term) #deduct the gradient times learn rate
             # ========================
 
 class MomentumSGD(Optimizer):

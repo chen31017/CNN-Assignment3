@@ -37,15 +37,14 @@ class MLP(Block):
             act = ReLU
         else:
             act = Sigmoid
-        blocks.append(Linear(in_features=in_features,out_features=hidden_features[0]))
-        blocks.append(act())
-        i = 0
-        l = len(hidden_features)
-        while i<l-1:
-            blocks.append(Linear(hidden_features[i],hidden_features[i+1]))
+        inf = in_features
+        for hidden in hidden_features:
+            blocks.append(Linear(inf,hidden))
             blocks.append(act())
-            i+=1
-        blocks.append(Linear(hidden_features[i],num_classes))
+            inf = hidden
+        if not hidden_features: #in case list is empty
+            hidden_features += [in_features]
+        blocks.append(Linear(hidden_features[-1] , num_classes)) #last layer to num classes
         # ========================
         self.sequence = Sequential(*blocks)
 
