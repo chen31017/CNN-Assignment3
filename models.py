@@ -108,7 +108,7 @@ class ConvClassifier(nn.Module):
             # chosen 1 padding as this preserves shape with 3*3 filters (here called kernel)
             layers.append(torch.nn.Conv2d(in_channels, filter, kernel_size=3, padding=1))
             layers.append(torch.nn.ReLU())#ReLu
-            if (i==pool):
+            if (i == pool):
                 layers.append(torch.nn.MaxPool2d(kernel_size=2))
                 pool += self.pool_every
             in_channels = filter  # this is the number of channels towards next layer

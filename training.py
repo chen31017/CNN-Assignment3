@@ -32,8 +32,8 @@ class Trainer(abc.ABC):
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.device = device
-        #model.to(self.device)
-        print("not set to gpu")
+        model.to(self.device)
+        #print("not set to gpu")
 
     def fit(self, dl_train: DataLoader, dl_test: DataLoader,
             num_epochs, checkpoints: str = None,
@@ -86,13 +86,16 @@ class Trainer(abc.ABC):
             # - Implement early stopping. This is a very useful and
             #   simple regularization technique that is highly recommended.
             # ====== YOUR CODE: ======
-            train_result = self.train_epoch(dl_train, verbose)
+            actual_num_epochs += 1
+            if test_loss:
+                prev = test_loss[-1]
+            train_result = self.train_epoch(dl_train, verbose = verbose)
             train_loss += train_result.losses
-            train_acc += train_result.accuracy
-            test_result = self.test_epoch(dl_test, verbose)
+            train_acc += [train_result.accuracy]
+            test_result = self.test_epoch(dl_test, verbose = verbose)
             test_loss += test_result.losses
-            test_acc += train_result.accuracy
-            if (epoch>0 and prev == test_loss[-1]): #no improvment
+            test_acc += [train_result.accuracy]
+            if (epoch>0 and prev <= test_loss[-1]): #no improvment
                 epochs_without_improvement += 1
             if (early_stopping==epochs_without_improvement):
                 break
@@ -371,7 +374,10 @@ class TorchTrainer(Trainer):
             # - Forward pass
             # - Calculate number of correct predictions
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            res = self.model.forward(X)
+            loss = self.loss_fn(res, y)
+            _, pred = res.max(dim=1)  # when specifying dim, gives a tuple with index
+            num_correct = torch.eq(y, pred).sum()
             # ========================
 
         return BatchResult(loss, num_correct)
