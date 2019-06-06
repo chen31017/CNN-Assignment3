@@ -86,10 +86,10 @@ class Trainer(abc.ABC):
             # - Implement early stopping. This is a very useful and
             #   simple regularization technique that is highly recommended.
             # ====== YOUR CODE: ======
-            train_result = train_epoch(dl_train, verbose)
+            train_result = self.train_epoch(dl_train, verbose)
             train_loss += train_result.losses
             train_acc += train_result.accuracy
-            test_result = test_epoch(dl_test, verbose)
+            test_result = self.test_epoch(dl_test, verbose)
             test_loss += test_result.losses
             test_acc += train_result.accuracy
             if (epoch>0 and prev == test_loss[-1]): #no improvment
