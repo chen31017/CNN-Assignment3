@@ -125,7 +125,7 @@ class ConvClassifier(nn.Module):
         # You'll need to calculate the number of features first.
         # The last Linear layer should have an output dimension of out_classes.
         # ====== YOUR CODE: ======
-        if self.pool_every <= 0 or (len(self.filters) > self.filters): #avoid deviding by 0 if there are no pools
+        if self.pool_every <= 0 or (self.pool_every > len(self.filters)): #avoid deviding by 0 if there are no pools
             pool_num = 0
         else:
             pool_num = len(self.filters) / self.pool_every
