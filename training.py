@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from typing import Callable, Any
 from pathlib import Path
 from helpers.train_results import BatchResult, EpochResult, FitResult
-
+from statistics import mean
 
 class Trainer(abc.ABC):
     """
@@ -86,19 +86,19 @@ class Trainer(abc.ABC):
             # - Implement early stopping. This is a very useful and
             #   simple regularization technique that is highly recommended.
             # ====== YOUR CODE: ======
-            actual_num_epochs += 1
             if test_loss:
                 prev = test_loss[-1]
             train_result = self.train_epoch(dl_train, verbose = verbose)
-            train_loss += train_result.losses
+            train_loss += [mean(train_result.losses)]
             train_acc += [train_result.accuracy]
             test_result = self.test_epoch(dl_test, verbose = verbose)
-            test_loss += test_result.losses
+            test_loss += [mean(test_result.losses)]
             test_acc += [train_result.accuracy]
-            if (epoch>0 and prev <= test_loss[-1]): #no improvment
+            if epoch > 0 and abs(test_loss[-1] - prev) < 0.1: #arbitrary threshhold for improvment
                 epochs_without_improvement += 1
-            if (early_stopping==epochs_without_improvement):
+            if early_stopping == epochs_without_improvement:
                 break
+            actual_num_epochs += 1
             # ========================
 
             # Save model checkpoint if requested
