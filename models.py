@@ -125,10 +125,12 @@ class ConvClassifier(nn.Module):
         # You'll need to calculate the number of features first.
         # The last Linear layer should have an output dimension of out_classes.
         # ====== YOUR CODE: ======
-        pool_num = len(self.filters) / self.pool_every
+        if self.pool_every <= 0 or (len(self.pool_every) > self.filters): #avoid deviding by 0 if there are no pools
+            pool_num = 0
+        else:
+            pool_num = len(self.filters) / self.pool_every
         in_features = (int)(in_h / (2 ** pool_num)) #every pool input size is cut in half
-        in_features = (in_features**2) * self.filters[-1]
-        #in_features = (int)(in_h / (2 ** pool_num)) #debug
+        in_features = (in_features**2) * self.filters[-1] #this matrix will be flattened
         for i, dim in enumerate(self.hidden_dims):
             layers.append(torch.nn.Linear(in_features, dim))
             layers.append(torch.nn.ReLU())

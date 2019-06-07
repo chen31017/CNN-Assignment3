@@ -97,6 +97,7 @@ class Trainer(abc.ABC):
             if epoch > 0 and abs(test_loss[-1] - prev) < 0.1: #arbitrary threshhold for improvment
                 epochs_without_improvement += 1
             if early_stopping == epochs_without_improvement:
+                print("early stopping :(")
                 break
             actual_num_epochs += 1
             # ========================
