@@ -64,6 +64,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     pool = pool_every * layers_per_block
     model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,
                                   pool_every=pool, hidden_dims=hidden_dims)
+    print(model)
     loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.9 ,weight_decay=reg)
     dl_train = torch.utils.data.DataLoader(ds_train, bs_train, shuffle=False)
