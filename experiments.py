@@ -67,7 +67,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     print(model)
     loss_fn = torch.nn.CrossEntropyLoss()
     #optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.9 ,weight_decay=reg)
-    optimizer = torch.optim.RMSprop(model.parameters(), learn_rate=1e-2, eps=1e-8)
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-2, eps=1e-8)
     dl_train = torch.utils.data.DataLoader(ds_train, bs_train, shuffle=False)
     dl_test = torch.utils.data.DataLoader(ds_test, bs_train, shuffle=False) #what is the bach size?
     trainer = training.TorchTrainer(model, loss_fn, optimizer, device=device)
