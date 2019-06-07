@@ -94,8 +94,10 @@ class Trainer(abc.ABC):
             test_result = self.test_epoch(dl_test, verbose = verbose)
             test_loss += [mean(test_result.losses)]
             test_acc += [train_result.accuracy]
-            if epoch > 0 and abs(test_loss[-1] - prev) < 0.1: #arbitrary threshhold for improvment
+            if epoch > 0 and (test_loss[-1] >= prev): #arbitrary threshhold for improvment
                 epochs_without_improvement += 1
+            else:
+                epochs_without_improvement = 0
             if early_stopping == epochs_without_improvement:
                 print("early stopping :(")
                 break
