@@ -64,12 +64,12 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     pool = pool_every * layers_per_block
     model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,
                                   pool_every=pool, hidden_dims=hidden_dims)
-    print(model)
+    #print(model)
     loss_fn = torch.nn.CrossEntropyLoss()
-    #optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.9 ,weight_decay=reg)
-    optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-2, eps=1e-8)
+    optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.9 ,weight_decay=reg)
+    #optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-3, eps=1e-8)
     dl_train = torch.utils.data.DataLoader(ds_train, bs_train, shuffle=False)
-    dl_test = torch.utils.data.DataLoader(ds_test, bs_train, shuffle=False) #what is the bach size?
+    dl_test = torch.utils.data.DataLoader(ds_test, bs_test, shuffle=False)
     trainer = training.TorchTrainer(model, loss_fn, optimizer, device=device)
     fit_res = trainer.fit(dl_train= dl_train, dl_test=dl_test, num_epochs=epochs, checkpoints=checkpoints,
                           early_stopping=early_stopping, )
