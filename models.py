@@ -176,6 +176,7 @@ class YourCodeNet(ConvClassifier):
         # Pooling to reduce dimensions.
         # ====== YOUR CODE: ======
         self.p = 0.2
+        layers.append(nn.BatchNorm2d(in_channels))
         pool = self.pool_every - 1
         for i, filter in enumerate(self.filters):
             # chosen 1 padding as this preserves shape with 3*3 filters (here called kernel)
