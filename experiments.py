@@ -56,21 +56,31 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     #  for you automatically.
     fit_res = None
     # ====== YOUR CODE: ======
-    x0, _ = ds_train[0]
+
+    x0, _ = ds_train[0] #get a image to infer sample sizes in data set
     in_size = x0.shape
+
+    #create model filter list
     filters = []
     for f in filters_per_layer:
         filters += ([f] * layers_per_block)
     pool = pool_every * layers_per_block
-    model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,
-                                  pool_every=pool, hidden_dims=hidden_dims)
-    #print(model)
+
+    #create model object
+    model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,                                  pool_every=pool, hidden_dims=hidden_dims)
+    #print(model) #debug, see that the model is what we wanted
+
+    #create loss function and optimizer
     loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.9 ,weight_decay=reg)
-    #optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-3, eps=1e-8)
-    dl_train = torch.utils.data.DataLoader(ds_train, bs_train, shuffle=False)
-    dl_test = torch.utils.data.DataLoader(ds_test, bs_test, shuffle=False)
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, weight_decay=reg)
+    #optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.9 ,weight_decay=reg)
+
+    #create data loaders and trainer
+    dl_train = torch.utils.data.DataLoader(ds_train, bs_train, shuffle=True, num_workers=2) #check num workers
+    dl_test = torch.utils.data.DataLoader(ds_test, bs_test, shuffle=True, num_workers=2)
     trainer = training.TorchTrainer(model, loss_fn, optimizer, device=device)
+
+    #run
     fit_res = trainer.fit(dl_train= dl_train, dl_test=dl_test, num_epochs=epochs, checkpoints=checkpoints,
                           early_stopping=early_stopping, )
     # ========================
