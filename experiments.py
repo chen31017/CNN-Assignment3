@@ -21,7 +21,7 @@ DATA_DIR = os.path.join(os.getenv('HOME'), '.pytorch-datasets')
 def run_experiment(run_name, out_dir='./results', seed=None,
                    # Training params
                    bs_train=128, bs_test=None, batches=100, epochs=100,
-                   early_stopping=3, checkpoints=None, lr=3e-3, reg=2e-3,
+                   early_stopping=3, checkpoints=None, lr=1e-3, reg=1e-3,
                    # Model params
                    filters_per_layer=[64], layers_per_block=2, pool_every=2,
                    hidden_dims=[1024], ycn=False,
@@ -72,7 +72,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
 
     #create loss function and optimizer
     loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, weight_decay=reg)
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, weight_decay=reg) #works better
     #optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.9 ,weight_decay=reg)
 
     #create data loaders and trainer
