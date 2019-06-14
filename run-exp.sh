@@ -10,6 +10,6 @@ do
         echo "==============================================="
         python -m hw3.experiments run-exp \
         --run-name exp1_1_K${k}_L${L} --epochs 100 --early-stopping 2 --lr 3e-3\
-        --filters-per-layer ${k} --layers-per-block ${L} --pool-every 2 --hidden-dims 1024;
+        --filters-per-layer ${k} --layers-per-block ${L} --pool-every 3 --hidden-dims 1024;
     done;
 done;
