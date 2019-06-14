@@ -161,6 +161,55 @@ class YourCodeNet(ConvClassifier):
     # For example, add batchnorm, dropout, skip connections, change conv
     # filter sizes etc.
     # ====== YOUR CODE: ======
-    #raise NotImplementedError()
+
+
+    #overriding the methods that generate a conv model
+
+
+    def _make_feature_extractor(self):
+        in_channels, in_h, in_w, = tuple(self.in_size)
+
+        layers = []
+        # TODO: Create the feature extractor part of the model:
+        # [(Conv -> ReLU)*P -> MaxPool]*(N/P)
+        # Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
+        # Pooling to reduce dimensions.
+        # ====== YOUR CODE: ======
+        pool = self.pool_every - 1
+        for i, filter in enumerate(self.filters):
+            # chosen 1 padding as this preserves shape with 3*3 filters (here called kernel)
+            layers.append(torch.nn.Conv2d(in_channels, filter, kernel_size=3, padding=1))
+            layers.append(torch.nn.ReLU())  # ReLu
+            if (i == pool):
+                layers.append(torch.nn.MaxPool2d(kernel_size=2))
+                pool += self.pool_every
+            in_channels = filter  # this is the number of channels towards next layer
+        # ========================
+        seq = nn.Sequential(*layers)
+        return seq
+
+    def _make_classifier(self):
+        in_channels, in_h, in_w, = tuple(self.in_size)
+
+        layers = []
+        # TODO: Create the classifier part of the model:
+        # (Linear -> ReLU)*M -> Linear
+        # You'll need to calculate the number of features first.
+        # The last Linear layer should have an output dimension of out_classes.
+        # ====== YOUR CODE: ======
+        if self.pool_every <= 0 or (self.pool_every > len(self.filters)):  # avoid deviding by 0 if there are no pools
+            pool_num = 0
+        else:
+            pool_num = len(self.filters) / self.pool_every
+        in_features = (int)(in_h / (2 ** pool_num))  # every pool input size is cut in half
+        in_features = (in_features ** 2) * self.filters[-1]  # this matrix will be flattened
+        for i, dim in enumerate(self.hidden_dims):
+            layers.append(torch.nn.Linear(in_features, dim))
+            layers.append(torch.nn.ReLU())
+            in_features = dim
+        layers.append(torch.nn.Linear(in_features, self.out_classes))
+        # ========================
+        seq = nn.Sequential(*layers)
+        return seq
     # ========================
 
