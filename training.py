@@ -83,7 +83,7 @@ class Trainer_1(abc.ABC):
 
             #early stopping
 
-            if epoch > 0 and (test_loss[-1] - prev >= 0):
+            if epoch > 0 and (test_loss[-1] - prev >= -0.001): #we consider this minor change as a non - improvment
                 epochs_without_improvement += 1
             else:
                 epochs_without_improvement = 0
