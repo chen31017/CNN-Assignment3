@@ -23,7 +23,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
                    bs_train=128, bs_test=None, batches=100, epochs=100,
                    early_stopping=3, checkpoints=None, lr=5e-3, reg=1e-3,
                    # Model params
-                   filters_per_layer=[64], layers_per_block=2, pool_every=2,
+                   filters_per_layer=[64], layers_per_block=2, pool_every = 2,
                    hidden_dims=[1024], ycn=False,
                    **kw):
     """
@@ -65,6 +65,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     for f in filters_per_layer:
         filters += ([f] * layers_per_block)
     #pool = pool_every * layers_per_block
+    pool = pool_every
 
     #create model object
     model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,                                  pool_every=pool, hidden_dims=hidden_dims)
