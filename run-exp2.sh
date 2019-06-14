@@ -7,7 +7,7 @@ do
     do
         echo "running ${L} layers with ${k} filters per layer"
         python -m hw3.experiments run-exp \
-        --run-name exp1_2_K${k}_L${L} --bs-train 64 --epochs 100 --early-stopping 2 \
-        --filters-per-layer ${k} --layers-per-block ${L} --pool-every 1 --hidden-dims 1024 100;
+        --run-name exp1_2_K${k}_L${L} --bs-train 64 --epochs 100 --early-stopping 2 --lr 1e-3 \
+        --filters-per-layer ${k} --layers-per-block ${L} --pool-every 2 --hidden-dims 1024;
     done;
 done;
