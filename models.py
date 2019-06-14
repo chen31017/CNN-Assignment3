@@ -181,7 +181,7 @@ class YourCodeNet(ConvClassifier):
             layers.append(torch.nn.Conv2d(in_channels, filter, kernel_size=3, padding=1))
             layers.append(nn.BatchNorm2d(filter))
             layers.append(torch.nn.ReLU())
-            layers.append(torch.nn.Dropout(0.3))
+            layers.append(torch.nn.Dropout(0.5))
             if (i == pool):
                 layers.append(torch.nn.MaxPool2d(kernel_size=2))
                 pool += self.pool_every
@@ -207,7 +207,7 @@ class YourCodeNet(ConvClassifier):
         in_features = (in_features ** 2) * self.filters[-1]  # this matrix will be flattened
         for i, dim in enumerate(self.hidden_dims):
             layers.append(torch.nn.Linear(in_features, dim))
-            layers.append(torch.nn.Dropout(0.3))
+            layers.append(torch.nn.Dropout(0.5))
             layers.append(torch.nn.ReLU())
             in_features = dim
         layers.append(torch.nn.Linear(in_features, self.out_classes))
