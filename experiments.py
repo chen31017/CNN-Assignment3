@@ -68,8 +68,9 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     pool = pool_every
 
     #create model object
-    model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,                                  pool_every=pool, hidden_dims=hidden_dims)
-    #print(model) #debug, see that the model is what we wanted
+    model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,
+                                  pool_every=pool, hidden_dims=hidden_dims)
+    print(model) #debug, see that the model is what we wanted
 
     #create loss function and optimizer
     loss_fn = torch.nn.CrossEntropyLoss()

@@ -83,7 +83,7 @@ class Trainer_1(abc.ABC):
 
             #early stopping
 
-            if epoch > 0 and (test_loss[-1] - prev >= -0.001): #we consider this minor change as a non - improvment
+            if epoch > 0 and (test_loss[-1] - prev >= -0.0001): #we consider this minor change as a non - improvment
                 epochs_without_improvement += 1
             else:
                 epochs_without_improvement = 0
@@ -276,11 +276,15 @@ class Trainer(abc.ABC):
             test_result = self.test_epoch(dl_test, verbose = verbose)
             test_loss += [mean(test_result.losses)]
             test_acc += [train_result.accuracy]
-            if epoch > 0 and (abs(test_loss[-1] - prev) <= 0.01): #arbitrary threshhold for improvment
+
+
+            #early stopping
+
+            if epoch > 0 and (test_loss[-1] - prev >= -0.0001): #we consider this minor change as a non - improvment
                 epochs_without_improvement += 1
             else:
                 epochs_without_improvement = 0
-            if early_stopping == epochs_without_improvement:
+            if early_stopping and early_stopping == epochs_without_improvement:
                 print("early stopping :(")
                 break
             actual_num_epochs += 1
