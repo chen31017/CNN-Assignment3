@@ -65,12 +65,12 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     filters = []
     for f in filters_per_layer:
         filters += ([f] * layers_per_block)
-    #pool = pool_every * layers_per_block
-    pool = math.ciel(len(filters) / 3)
+    pool = layers_per_block // pool_every
+    #pool = pool_every #math.ceil(len(filters) / 2)
 
     #create model object
     model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,
-                                  pool_every=pool, hidden_dims=hidden_dims)
+                                  pool_every = pool, hidden_dims = hidden_dims)
     print(model) #debug, see that the model is what we wanted
 
     #create loss function and optimizer
