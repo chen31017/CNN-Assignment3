@@ -65,7 +65,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     for f in filters_per_layer:
         filters += ([f] * layers_per_block)
     #pool = pool_every * layers_per_block
-    pool = pool_every
+    pool = len(filters) // 4 
 
     #create model object
     model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,
