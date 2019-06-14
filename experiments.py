@@ -7,6 +7,7 @@ import json
 
 import torch
 import torchvision
+import math
 
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR10
@@ -65,7 +66,9 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     for f in filters_per_layer:
         filters += ([f] * layers_per_block)
     #pool = pool_every * layers_per_block
-    pool = len(filters) // 4 
+    pool = len(filters) // 4
+    if pool == 0:
+        pool = 1
 
     #create model object
     model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,
