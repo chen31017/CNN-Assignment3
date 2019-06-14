@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from typing import Callable, Any
 from pathlib import Path
 from helpers.train_results import BatchResult, EpochResult, FitResult
+from statistics import mean
 
 class Trainer_1(abc.ABC):
     """
