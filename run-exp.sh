@@ -1,7 +1,7 @@
 cd .. #git will sync this into hw3, but it needs to run out of assignment3 folder
 pwd
 
-for k in {32, 64}
+for k in {32,64}
 do
     for L in {2,4,8,16}
     do
