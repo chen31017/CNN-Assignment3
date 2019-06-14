@@ -79,7 +79,7 @@ class Trainer_1(abc.ABC):
             train_acc += [train_result.accuracy]
             test_result = self.test_epoch(dl_test, verbose = verbose)
             test_loss += [mean(test_result.losses)]
-            test_acc += [train_result.accuracy]
+            test_acc += [test_result.accuracy]
 
             #early stopping
 
