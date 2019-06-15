@@ -69,7 +69,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     pool = math.ceil(len(filters) / 4)
 
     #create model object
-    model = models.ConvClassifier(in_size = in_size, out_classes = 10, filters = filters,
+    model = model_cls(in_size = in_size, out_classes = 10, filters = filters,
                                   pool_every = pool, hidden_dims = hidden_dims)
     print(model) #debug, see that the model is what we wanted
 
