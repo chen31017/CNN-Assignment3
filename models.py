@@ -183,7 +183,8 @@ class YourCodeNet(ConvClassifier):
             # chosen 1 padding as this preserves shape with 3*3 filters (here called kernel)
             layers.append(torch.nn.Conv2d(in_channels, filter, kernel_size=3, padding=1))
             layers.append(nn.BatchNorm2d(filter))
-            layers.append(torch.nn.LeakyReLU())
+            layers.append(torch.nn.ReLU())
+            #layers.append(torch.nn.LeakyReLU())
             layers.append(torch.nn.Dropout(self.p))
             if (i == pool):
                 layers.append(torch.nn.MaxPool2d(kernel_size=2))
@@ -211,7 +212,8 @@ class YourCodeNet(ConvClassifier):
         for i, dim in enumerate(self.hidden_dims):
             layers.append(torch.nn.Linear(in_features, dim))
             layers.append(nn.BatchNorm1d(dim))
-            layers.append(torch.nn.LeakyReLU())
+            layers.append(torch.nn.ReLU())
+            #layers.append(torch.nn.LeakyReLU())
             layers.append(torch.nn.Dropout(self.p))
             in_features = dim
         layers.append(torch.nn.Linear(in_features, self.out_classes))
